@@ -278,16 +278,17 @@ RUN if [ ${INSTALL_AUDIOWAVEFORM} = true ]; then \
 ARG INSTALL_AMQP=false
 
 RUN if [ ${INSTALL_AMQP} = true ]; then \
-    apk --update add -q rabbitmq-c rabbitmq-c-dev && \
-    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ]; then \
-      printf "\n" | pecl install amqp-1.11.0beta; \
-    else \
-      printf "\n" | pecl install amqp; \
-    fi && \
+  docker-php-ext-install sockets; \
+  apk --update add -q rabbitmq-c rabbitmq-c-dev && \
+  if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ]; then \
+    printf "\n" | pecl install amqp-1.11.0; \
+  else \
+    printf "\n" | pecl install amqp; \
+  fi && \
     docker-php-ext-enable amqp && \
-    apk del -q rabbitmq-c-dev && \
-    docker-php-ext-install sockets \
-;fi
+    apk del -q rabbitmq-c-dev; \
+    php -m | grep -oiE '^amqp$' \
+  ;fi
 
 # Install Gearman:
 ARG INSTALL_GEARMAN=false
