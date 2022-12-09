@@ -43,7 +43,7 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   caddy:
     driver: ${VOLUMES_DRIVER}
-  meilisearch:
+  searchlight:
     driver: ${VOLUMES_DRIVER}
   elasticsearch:
     driver: ${VOLUMES_DRIVER}
@@ -2184,14 +2184,14 @@ services:
         - "${NGINX_HOST_HTTP_PORT}:80"
         - "${NGINX_HOST_HTTPS_PORT}:443"
         - "${VARNISH_BACKEND_PORT}:81"
-      depends_on:
+#      depends_on:
 #        - php-fpm56
-        - php-fpm
+#        - php-fpm
 #        - php-fpm-tom
 #        - php-fpm7
 #        - php-fpm72
 #        - php-fpm73
-        - php-fpm74
+#        - php-fpm74
 #        - golang
 #        - sentry-relay
       extra_hosts:
@@ -2314,6 +2314,7 @@ services:
         - TZ=${WORKSPACE_TIMEZONE}
       volumes:
         - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+        - ${DATA_PATH_HOST}/mysql/mysql:/var/log
         - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
       ports:
         - "${MYSQL_PORT}:3306"
@@ -2566,11 +2567,15 @@ services:
         - backend
 ### Redis Cluster ##########################################
     redis-cluster:
-      build: ./redis-cluster
+      image: 'phuongdm1987/docker-redis-cluster:1.0.0'
+      volumes:
+        - ${DATA_PATH_HOST}/redis_cluster:/data
       ports:
-        - "${REDIS_CLUSTER_PORT_RANGE}:7000-7005"
-      networks:
-        - backend
+        - '7000-7005:7000-7005'
+      environment:
+        - DEFAULT_PASSWORD="secret"
+        - IP="0.0.0.0"
+
 ### SSDB ################################################
     ssdb:
       build: ./ssdb
@@ -2628,8 +2633,8 @@ services:
       ports:
         - "${BEANSTALKD_HOST_PORT}:11300"
       privileged: true
-      depends_on:
-        - php-fpm
+#      depends_on:
+#        - php-fpm
       networks:
         - backend
 
