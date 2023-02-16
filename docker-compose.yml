@@ -4200,7 +4200,7 @@ services:
       context: ./golang
     tty: true
     volumes:
-      - ${APP_CODE_PATH_HOST}/go-projects:/go
+      - ${APP_CODE_PATH_HOST}/src:/go
     #        - /data/wwwroot/go:/go
     environment:
       - GOBIN=/go/bin
@@ -4209,6 +4209,7 @@ services:
     #    - mysql
     ports:
       - "8000:8000"
+      - "16001:16001"
     networks:
       - frontend
       - backend
