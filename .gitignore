@@ -5,8 +5,8 @@
 .docker-sync
 /jenkins/jenkins_home
 
-/logstash/pipeline/*.conf
-/logstash/config/pipelines.yml
+#/logstash/pipeline/*.conf
+#/logstash/config/pipelines.yml
 
 /nginx/ssl/*.crt
 /nginx/ssl/*.key
