@@ -2339,8 +2339,11 @@ services:
           - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
           - TZ=${WORKSPACE_TIMEZONE}
         volumes:
-          - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
-          - ${DATA_PATH_HOST}/mysql/mysql:/var/log
+          - ${DATA_PATH_HOST}/mysql8Data:/var/lib/mysql
+          - ${DATA_PATH_HOST}/mysql8Log/log:/var/log
+          - ${DATA_PATH_HOST}/mysql8home:/home/mysql
+#          - ${APP_CODE_PATH_HOST}/conf:/etc/mysql/conf.d
+#          - ${APP_CODE_PATH_HOST}/my.cnf:/etc/mysql/my.cnf
           - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
         ports:
           - "${MYSQL_PORT}:3306"
