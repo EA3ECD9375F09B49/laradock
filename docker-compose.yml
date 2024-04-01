@@ -185,6 +185,7 @@ services:
           - INSTALL_EVENT=${WORKSPACE_INSTALL_EVENT}
           - INSTALL_DNSUTILS=${WORKSPACE_INSTALL_DNSUTILS}
           - INSTALL_POPPLER_UTILS=${WORKSPACE_INSTALL_POPPLER_UTILS}
+          - INSTALL_JDK=${WORKSPACE_INSTALL_JDK}
           - http_proxy
           - https_proxy
           - no_proxy
@@ -1136,6 +1137,7 @@ services:
           - INSTALL_MYSQLI=${PHP_FPM_INSTALL_MYSQLI}
           - INSTALL_PGSQL=${PHP_FPM_INSTALL_PGSQL}
           - INSTALL_PG_CLIENT=${PHP_FPM_INSTALL_PG_CLIENT}
+          - PG_CLIENT_VERSION=${POSTGRES_CLIENT_VERSION}
           - INSTALL_POSTGIS=${PHP_FPM_INSTALL_POSTGIS}
           - INSTALL_INTL=${PHP_FPM_INSTALL_INTL}
           - INSTALL_GHOSTSCRIPT=${PHP_FPM_INSTALL_GHOSTSCRIPT}
@@ -1164,7 +1166,7 @@ services:
           - INSTALL_FFMPEG=${PHP_FPM_FFMPEG}
           - INSTALL_AUDIOWAVEFORM=${PHP_FPM_AUDIOWAVEFORM}
           - INSTALL_WKHTMLTOPDF=${PHP_FPM_INSTALL_WKHTMLTOPDF}
-          - WKHTMLTOPDF_VERSION=${WORKSPACE_WKHTMLTOPDF_VERSION}
+          - WKHTMLTOPDF_VERSION=${PHP_FPM_WKHTMLTOPDF_VERSION}
           - INSTALL_XHPROF=${PHP_FPM_INSTALL_XHPROF}
           - INSTALL_XMLRPC=${PHP_FPM_INSTALL_XMLRPC}
           - INSTALL_PHPDECIMAL=${PHP_FPM_INSTALL_PHPDECIMAL}
@@ -1173,16 +1175,19 @@ services:
           - INSTALL_TRADER=${PHP_FPM_INSTALL_TRADER}
           - INSTALL_OPENCC=${PHP_FPM_OPENCC}
           - INSTALL_EVENT=${PHP_FPM_INSTALL_EVENT}
+          - LEGACY_OPENSSL=${PHP_LEGACY_OPENSSL}
           - DOWNGRADE_OPENSSL_TLS_AND_SECLEVEL=${PHP_DOWNGRADE_OPENSSL_TLS_AND_SECLEVEL}
+          - DOWNGRADE_OPENSSL_TLS_VERSION=${PHP_DOWNGRADE_OPENSSL_TLS_VERSION}
           - PUID=${PHP_FPM_PUID}
           - PGID=${PHP_FPM_PGID}
           - IMAGEMAGICK_VERSION=${PHP_FPM_IMAGEMAGICK_VERSION}
           - LOCALE=${PHP_FPM_DEFAULT_LOCALE}
-          - PHP_FPM_NEW_RELIC=${PHP_FPM_NEW_RELIC}
-          - PHP_FPM_NEW_RELIC_KEY=${PHP_FPM_NEW_RELIC_KEY}
-          - PHP_FPM_NEW_RELIC_APP_NAME=${PHP_FPM_NEW_RELIC_APP_NAME}
+          - NEW_RELIC=${PHP_FPM_NEW_RELIC}
+          - NEW_RELIC_KEY=${PHP_FPM_NEW_RELIC_KEY}
+          - NEW_RELIC_APP_NAME=${PHP_FPM_NEW_RELIC_APP_NAME}
           - INSTALL_DOCKER_CLIENT=${PHP_FPM_INSTALL_DOCKER_CLIENT}
           - INSTALL_DNSUTILS=${PHP_FPM_INSTALL_DNSUTILS}
+          - INSTALL_POPPLER_UTILS=${PHP_FPM_INSTALL_POPPLER_UTILS}
           - http_proxy
           - https_proxy
           - no_proxy
@@ -2175,67 +2180,60 @@ services:
         networks:
           - backend
 
-      ### Soketi Server ##############################################
+  ### Soketi Server ##############################################
     soketi:
-        build:
-          context: ./soketi
-        ports:
-          - "${SOKETI_PORT}:6001"
-          - "${SOKETI_METRICS_SERVER_PORT}:9601"
-        networks:
-          - frontend
-          - backend
+      build:
+        context: ./soketi
+      volumes:
+        - ./soketi/config.json:/app/bin/config.json:ro
+      ports:
+        - "${SOKETI_PORT}:6001"
+        - "${SOKETI_METRICS_SERVER_PORT}:9601"
+      networks:
+        - frontend
+        - backend
 
-      ### NGINX Server #########################################
+### NGINX Server #########################################
     nginx:
-        build:
-          context: ./nginx
-          args:
-            - CHANGE_SOURCE=${CHANGE_SOURCE}
-            - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
-            - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
-            - http_proxy
-            - https_proxy
-            - no_proxy
-        volumes:
-          - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-          - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
-          - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
-          - ${NGINX_SSL_PATH}:/etc/nginx/ssl
-          - ${NGINX_HTML_PATH}:/usr/share/nginx/html
-          - ${NGINX_BOTBLOCK_CONFIG_PATH}:/etc/nginx/bots.d
-          - ${NGINX_MAIN_CONFIG_PATH}:/etc/nginx/nginx.conf
-        ports:
-          - "${NGINX_HOST_HTTP_PORT}:80"
-          - "${NGINX_HOST_HTTPS_PORT}:443"
-          - "${VARNISH_BACKEND_PORT}:81"
-        #      depends_on:
-        #        - php-fpm56
-        #        - php-fpm
-        #        - php-fpm-tom
-        #        - php-fpm7
-        #        - php-fpm72
-        #        - php-fpm73
-        #        - php-fpm74
-        #        - golang
-        #        - sentry-relay
-        extra_hosts:
-          - "dockerhost:${DOCKER_HOST_IP}"
-          - "dysmsapi.aliyuncs.com:8.210.214.228"
-          - "ddtgc.h2h7.com:35.220.137.228"
-          - "dd-tgc-adminlb-1752508356.ap-east-1.elb.amazonaws.com:18.166.163.168"
-        #        - "api.jianghu.me:${DOCKER_HOST_IP}"
-        #        - "local.multisites.com:${DOCKER_HOST_IP}"
-        networks:
-          backend:
-            aliases:
-              - api.jianghu.me
-              - admin.chunqiu.net
-              - www.zhibo.me
-              - cs.zhiboapi.me
-              - pservice.zhibo.me
-              - csadmin.zhibo.me
-      ### OpenResty Server #########################################
+      build:
+        context: ./nginx
+        args:
+          - CHANGE_SOURCE=${CHANGE_SOURCE}
+          - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+          - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
+          - http_proxy
+          - https_proxy
+          - no_proxy
+      volumes:
+        - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+        - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+        - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+        - ${NGINX_SSL_PATH}:/etc/nginx/ssl
+        - ${NGINX_HTML_PATH}:/usr/share/nginx/html
+        - ${NGINX_BOTBLOCK_CONFIG_PATH}:/etc/nginx/bots.d
+        - ${NGINX_MAIN_CONFIG_PATH}:/etc/nginx/nginx.conf
+      ports:
+        - "${NGINX_HOST_HTTP_PORT}:80"
+        - "${NGINX_HOST_HTTPS_PORT}:443"
+        - "${VARNISH_BACKEND_PORT}:81"
+      depends_on:
+        - php-fpm
+      networks:
+         backend:
+          aliases:
+            - api.jianghu.me
+            - admin.chunqiu.net
+            - www.zhibo.me
+            - cs.zhiboapi.me
+            - pservice.zhibo.me
+            - csadmin.zhibo.me
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+        - "dysmsapi.aliyuncs.com:8.210.214.228"
+        - "ddtgc.h2h7.com:35.220.137.228"
+        - "dd-tgc-adminlb-1752508356.ap-east-1.elb.amazonaws.com:18.166.163.168"
+
+### OpenResty Server #########################################
     openresty:
         build:
           context: ./openresty
@@ -2847,8 +2845,8 @@ services:
         - ADMINER_DEFAULT_SERVER=${ADM_DEFAULT_SERVER}
       ports:
         - "${ADM_PORT}:8080"
-      depends_on:
-        - php-fpm
+      # depends_on:
+      #   - php-fpm
       networks:
         - frontend
         - backend
@@ -2876,6 +2874,8 @@ services:
         - ${DATA_PATH_HOST}/meilisearch:/data.ms
       ports:
         - "${MEILISEARCH_HOST_PORT}:7700"
+      environment:
+        - MEILI_MASTER_KEY=${MEILISEARCH_KEY}
       networks:
         - frontend
         - backend
