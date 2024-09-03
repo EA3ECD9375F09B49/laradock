@@ -272,8 +272,9 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
       if [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") < "2" ]; then \
             pecl install xdebug-2.9.8; \
           else \
+            ## 7.3 and  7.4 use xdebug version 3.1.6  https://xdebug.org/docs/compat
             echo "i am here"; \
-            pecl install xdebug; \
+            pecl install xdebug-3.1.6; \
           fi \
     fi \
   fi && \

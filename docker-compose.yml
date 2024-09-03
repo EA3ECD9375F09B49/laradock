@@ -20,6 +20,8 @@ volumes:
     driver: ${VOLUMES_DRIVER}
   redis-test:
     driver: ${VOLUMES_DRIVER}
+  redis-cluster:
+    driver: ${VOLUMES_DRIVER}
   redis-kaifa:
     driver: ${VOLUMES_DRIVER}
   neo4j:
@@ -819,6 +821,7 @@ services:
           - INSTALL_GMP=${WORKSPACE73_INSTALL_GMP}
           - INSTALL_GNUPG=${WORKSPACE73_INSTALL_GNUPG}
           - INSTALL_XDEBUG=${WORKSPACE73_INSTALL_XDEBUG}
+          - XDEBUG_PORT=${WORKSPACE73_XDEBUG_PORT}
           - INSTALL_PCOV=${WORKSPACE73_INSTALL_PCOV}
           - INSTALL_PHPDBG=${WORKSPACE73_INSTALL_PHPDBG}
           - INSTALL_BLACKFIRE=${INSTALL_BLACKFIRE}
@@ -1740,16 +1743,17 @@ services:
           - ./php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
           - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
           - docker-in-docker:/certs/client
-        #      ports:
-        #        - "${PHP_FPM73_XDEBUG_PORT}:9003"
+#        ports:
+#          - "${PHP_FPM73_XDEBUG_PORT}:9003"
         expose:
-          #        - "9000"
+          - "9000"
           - "9003"
         extra_hosts:
           - "dockerhost:${DOCKER_HOST_IP}"
           - "dysmsapi.aliyuncs.com:8.210.214.228"
           - "ddtgc.h2h7.com:35.220.137.228"
           - "dd-tgc-adminlb-1752508356.ap-east-1.elb.amazonaws.com:18.166.163.168"
+          - "api.bcallcenter.me:${WEBSERVER_IP}"
         environment:
           - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
           - DOCKER_HOST=tcp://docker-in-docker:2376
@@ -2217,7 +2221,7 @@ services:
         - "${NGINX_HOST_HTTPS_PORT}:443"
         - "${VARNISH_BACKEND_PORT}:81"
       depends_on:
-        - php-fpm
+        - php-fpm73
       networks:
          backend:
           aliases:
