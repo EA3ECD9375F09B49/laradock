@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM openjdk:11-jdk
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
@@ -29,7 +29,7 @@ ENV TZ ${TZ}
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# `/usr/share/jenkins/ref/` contains all reference configuration we want 
+# `/usr/share/jenkins/ref/` contains all reference configuration we want
 # to set on a fresh new installation. Use it to bundle additional plugins 
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
@@ -45,7 +45,7 @@ COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groov
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.319}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.381}
 #https://updates.jenkins-ci.org/download/war/
 # jenkins.war checksum, download will be validated using it
 # 2.319 below is SHA-256 key
