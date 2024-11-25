@@ -4262,22 +4262,80 @@ services:
         - backend
     ### ftp ###################################################
     vsftpd:
-      image: shourai/vsftpd-alpine:latest
-      container_name: vsftp
+      image: stilliard/pure-ftpd
+      ports:
+        - "21:21"
+        - "30010-30019:30010-30019"
+        - "10100-10110:10100-10110"
       environment:
-        - FTP_USER=admin        #自定义用户名
-        - FTP_PASS=123123       #自定义用户密码
-        - PASV_ENABLE=YES
-#        - PASV_ADDRESS=127.0.0.1    #宿主机的IP
-        - PASV_MIN_PORT=21100
-        - PASV_MAX_PORT=21110
-        - ANON_ENABLE=NO
-        - NO_ANON_PASSWD=NO
-        - ANON_ROOT=/var/ftp
+        PUBLICHOST: "localhost"
+        FTP_USER_NAME: admin
+        FTP_USER_PASS: 123456
+        FTP_USER_HOME: /home/admin
+        FTP_PASSIVE_PORTS: "30010:30019"
+        PASV_ENABLE: Yes
+        PASV_MIN_PORT: 10100
+        PASV_MAX_PORT: 10110
       volumes:
         - ${APP_CODE_PATH_HOST}/golangProject/src/data:/home/admin #与FTP_USER保持一致,即$FTP_USER的值是什么此处的目录就是什么
-      ports:
-        - "20:20"
-        - "21:21"
-        - "21100-21110:21100-21110"
+
+    apollo-configservice: #Config Service提供配置的读取、推送等功能，服务对象是Apollo客户端
+      image: apolloconfig/apollo-configservice:1.8.1
       restart: always
+      #container_name: apollo-configservice
+      volumes:
+        - ./databases/apollo-configservice:/opt/logs
+      ports:
+        - "8060:8060"
+      environment:
+        - TZ='Asia/Shanghai'
+        - SERVER_PORT=8060
+        - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
+        - EUREKA_INSTANCE_HOME_PAGE_URL=http://host.docker.internal:8060
+        - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/apolloconfigdb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+        - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
+        - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}    #MysqkPassWord!
+
+    apollo-adminservice: #Admin Service提供配置的修改、发布等功能，服务对象是Apollo Portal（管理界面）
+      image: apolloconfig/apollo-adminservice:1.8.1
+      restart: always
+      #container_name: apollo-adminservice
+      # 默认账号 apollo admin
+      # 要去这里下载安装 sql : https://github:com/apolloconfig/apollo/tree/master/scripts/sql/profiles/mysql-default:
+      volumes:
+        - ./databases/apollo-adminservice:/opt/logs
+      ports:
+        - "8090:8090"
+      depends_on:
+        - apollo-configservice
+      environment:
+        - TZ='Asia/Shanghai'
+        - SERVER_PORT=8090
+        - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
+        - SPRING_DATASOURCE_URL=jdbc:mysql:/host.docker.internal:3307/apolloconfigdb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+        - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
+        - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}  #MysqkPassWord!
+
+
+    apollo-portal: #管理界面
+      image: apolloconfig/apollo-portal:1.8.1
+      restart: always
+      container_name: apollo-portal
+      volumes:
+        - ./databases/apollo-portal:/opt/logs
+      ports:
+        - "8070:8070"
+      depends_on:
+        - apollo-adminservice
+      environment:
+        - TZ='Asia/Shanghai'
+        - SERVER_PORT=8070
+        - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
+        - APOLLO_PORTAL_ENVS=dev
+        - DEV_META=http://host.docker.internal:8060
+        - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/apolloportaldb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+        - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
+        - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}    #MysqkPassWord!
+
+
+
