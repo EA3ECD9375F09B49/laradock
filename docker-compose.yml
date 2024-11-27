@@ -4280,7 +4280,7 @@ services:
         - ${APP_CODE_PATH_HOST}/golangProject/src/data:/home/admin #与FTP_USER保持一致,即$FTP_USER的值是什么此处的目录就是什么
 
     apollo-configservice: #Config Service提供配置的读取、推送等功能，服务对象是Apollo客户端
-      image: apolloconfig/apollo-configservice:1.8.1
+      image: apolloconfig/apollo-configservice:latest
       restart: always
       #container_name: apollo-configservice
       volumes:
@@ -4291,13 +4291,13 @@ services:
         - TZ='Asia/Shanghai'
         - SERVER_PORT=8060
         - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
-        - EUREKA_INSTANCE_HOME_PAGE_URL=http://host.docker.internal:8060
-        - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/apolloconfigdb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+        - EUREKA_INSTANCE_HOME_PAGE_URL=http://localhost:8060
+        - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/ApolloConfigDB-DEV?characterEncoding=utf8&serverTimezone=Asia/Shanghai
         - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
         - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}    #MysqkPassWord!
 
     apollo-adminservice: #Admin Service提供配置的修改、发布等功能，服务对象是Apollo Portal（管理界面）
-      image: apolloconfig/apollo-adminservice:1.8.1
+      image: apolloconfig/apollo-adminservice:latest
       restart: always
       #container_name: apollo-adminservice
       # 默认账号 apollo admin
@@ -4312,13 +4312,13 @@ services:
         - TZ='Asia/Shanghai'
         - SERVER_PORT=8090
         - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
-        - SPRING_DATASOURCE_URL=jdbc:mysql:/host.docker.internal:3307/apolloconfigdb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+        - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/ApolloConfigDB-DEV?characterEncoding=utf8&serverTimezone=Asia/Shanghai
         - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
         - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}  #MysqkPassWord!
 
 
     apollo-portal: #管理界面
-      image: apolloconfig/apollo-portal:1.8.1
+      image: apolloconfig/apollo-portal:latest
       restart: always
       container_name: apollo-portal
       volumes:
@@ -4332,7 +4332,7 @@ services:
         - SERVER_PORT=8070
         - EUREKA_INSTANCE_IP_ADDRESS=host.docker.internal
         - APOLLO_PORTAL_ENVS=dev
-        - DEV_META=http://host.docker.internal:8060
+        - DEV_META=http://apollo-configservice:8060
         - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/apolloportaldb?characterEncoding=utf8&serverTimezone=Asia/Shanghai
         - SPRING_DATASOURCE_USERNAME=${MYSQL_ROOT_USER}
         - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}    #MysqkPassWord!
