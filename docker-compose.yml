@@ -1781,6 +1781,7 @@ services:
             - INSTALL_GMP=${PHP_FPM74_INSTALL_GMP}
             - INSTALL_GNUPG=${PHP_FPM74_INSTALL_GNUPG}
             - INSTALL_XDEBUG=${PHP_FPM74_INSTALL_XDEBUG}
+            - XDEBUG_PORT=${PHP_FPM_XDEBUG_PORT}
             - INSTALL_PCOV=${PHP_FPM74_INSTALL_PCOV}
             - INSTALL_PHPDBG=${PHP_FPM74_INSTALL_PHPDBG}
             - INSTALL_BLACKFIRE=${INSTALL_BLACKFIRE}
@@ -1856,8 +1857,11 @@ services:
           - ./php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
           - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
           - docker-in-docker:/certs/client
+        ports:
+          - "9001:9003"
+#          - "9000:9000"
         expose:
-          - "9000"
+          - "9003"
         extra_hosts:
           - "dockerhost:${DOCKER_HOST_IP}"
           - "mysentry.com:host-gateway"
