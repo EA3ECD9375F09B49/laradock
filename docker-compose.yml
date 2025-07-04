@@ -2933,7 +2933,7 @@ services:
       volumes:
         - './logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml'
         - './logstash/pipeline:/usr/share/logstash/pipeline'
-        - './logstash/log:/usr/share/logstash/log'
+        - './logstash/config:/usr/share/logstash/config'
       ports:
         - '5001:5001'
       environment:
