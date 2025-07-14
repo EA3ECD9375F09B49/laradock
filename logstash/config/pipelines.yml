@@ -1,0 +1,9 @@
+- pipeline.id: game_record_pipeline
+  path.config: "/usr/share/logstash/pipeline/gameRecord.conf"
+  pipeline.workers: 1
+  queue.type: persisted
+
+- pipeline.id: purchase_record_pipeline
+  path.config: "/usr/share/logstash/pipeline/hemaiRecord.conf"
+  pipeline.workers: 1
+  queue.type: persisted

@@ -2932,12 +2932,16 @@ services:
           - ELK_VERSION=${ELK_VERSION}
       volumes:
         - './logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml'
+        - './logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml'
         - './logstash/pipeline:/usr/share/logstash/pipeline'
-        - './logstash/config:/usr/share/logstash/config'
+        - './logstash/log:/usr/share/logstash/log'
       ports:
         - '5001:5001'
+        - '9600:9600'
+      user: logstash
       environment:
         LS_JAVA_OPTS: '-Xmx1g -Xms1g'
+        LS_HTTP_HOST: "0.0.0.0"
       env_file:
         - .env
       networks:
