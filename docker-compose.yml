@@ -4264,7 +4264,7 @@ services:
           - mysql
           - redis-cluster
       ports:
-        - "8080:8080"
+#        - "8080:8080"
         - "16001:16001"
       networks:
         - frontend
