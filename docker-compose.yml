@@ -4254,6 +4254,10 @@ services:
     golang:
       build:
         context: ./golang
+        args:
+          - CHANGE_SOURCE=${CHANGE_SOURCE}
+          - INSTALL_GOF=${GOLANG_INSTALL_GOF}
+          - GOF_VERSION=${GOLANG_GOF_VERSION}
       tty: true
       volumes:
         - ${APP_CODE_PATH_HOST}/golangProject/src:/go
