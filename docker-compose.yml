@@ -2933,8 +2933,9 @@ services:
       volumes:
         - './logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml'
         - './logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml'
+        - './logstash/config/log4j2.properties:/usr/share/logstash/config/log4j2.properties'
         - './logstash/pipeline:/usr/share/logstash/pipeline'
-        - './logstash/log:/usr/share/logstash/log'
+        - './logstash/log:/usr/share/logstash/logs'
       ports:
         - '5001:5001'
         - '9600:9600'

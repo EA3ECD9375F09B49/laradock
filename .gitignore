@@ -39,3 +39,5 @@ nginx/bots.d/
 logstash/config/.logstash_jdbc_last_run
 
 logstash/config/logstash_jdbc_last_run
+
+logstash/log/

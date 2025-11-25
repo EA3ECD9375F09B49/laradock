@@ -13,7 +13,7 @@ RUN logstash-plugin install --no-verify logstash-output-jdbc
 
 RUN mkdir -p /usr/share/logstash/logs \
     && chown -R logstash:logstash /usr/share/logstash/logs \
-    && chmod -R 750 /usr/share/logstash/logs
+    && chmod -R 777 /usr/share/logstash/logs
 
 # 添加自定义配置文件确保使用正确用户
 RUN echo "LS_USER=logstash" >> /usr/share/logstash/config/startup.options \
