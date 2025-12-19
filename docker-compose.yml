@@ -1879,6 +1879,7 @@ services:
         links:
           - docker-in-docker
 
+
       ### PHP Worker ############################################
     php-worker:
         build:
@@ -2226,6 +2227,7 @@ services:
         - "${VARNISH_BACKEND_PORT}:81"
       depends_on:
         - php-fpm74
+        - php-fpm
       networks:
          backend:
           aliases:
