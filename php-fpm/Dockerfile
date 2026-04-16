@@ -281,23 +281,25 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
   docker-php-ext-enable xdebug \
 ;fi
 
-# Copy xdebug configuration for remote debugging
-COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
-RUN if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ] || { [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && { [ $(php -r "echo PHP_MINOR_VERSION;") = "4" ] || [ $(php -r "echo PHP_MINOR_VERSION;") = "3" ] ;} ;}; then \
-  sed -i "s/xdebug.remote_host=/xdebug.client_host=/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_connect_back=0/xdebug.discover_client_host=false/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_port=9000/xdebug.client_port=${XDEBUG_PORT}/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.profiler_enable=0/; xdebug.profiler_enable=0/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.profiler_output_dir=/xdebug.output_dir=/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_mode=req/; xdebug.remote_mode=req/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_autostart=0/xdebug.start_with_request=yes/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_enable=0/xdebug.mode=debug/" /usr/local/etc/php/conf.d/xdebug.ini \
-;else \
-  sed -i "s/xdebug.remote_autostart=0/xdebug.remote_autostart=1/" /usr/local/etc/php/conf.d/xdebug.ini && \
-  sed -i "s/xdebug.remote_enable=0/xdebug.remote_enable=1/" /usr/local/etc/php/conf.d/xdebug.ini \
-;fi
-RUN sed -i "s/xdebug.cli_color=0/xdebug.cli_color=1/" /usr/local/etc/php/conf.d/xdebug.ini
+#RUN mkdir -p /var/www/xdebug_logs && chmod 777 /var/www/xdebug_logs ;
+# Copy xdebug configuration for remote debugging
+#COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+#
+#RUN if [ $(php -r "echo PHP_MAJOR_VERSION;") = "8" ] || { [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && { [ $(php -r "echo PHP_MINOR_VERSION;") = "4" ] || [ $(php -r "echo PHP_MINOR_VERSION;") = "3" ] ;} ;}; then \
+#  sed -i "s/xdebug.remote_host=/xdebug.client_host=/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_connect_back=0/xdebug.discover_client_host=false/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_port=9000/xdebug.client_port=${XDEBUG_PORT}/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.profiler_enable=0/; xdebug.profiler_enable=0/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.profiler_output_dir=/xdebug.output_dir=/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_mode=req/; xdebug.remote_mode=req/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_autostart=0/xdebug.start_with_request=yes/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_enable=0/xdebug.mode=debug/" /usr/local/etc/php/conf.d/xdebug.ini \
+#;else \
+##  sed -i "s/xdebug.remote_autostart=0/xdebug.remote_autostart=1/" /usr/local/etc/php/conf.d/xdebug.ini && \
+#  sed -i "s/xdebug.remote_enable=0/xdebug.remote_enable=1/" /usr/local/etc/php/conf.d/xdebug.ini \
+#;fi
+#RUN sed -i "s/xdebug.cli_color=0/xdebug.cli_color=1/" /usr/local/etc/php/conf.d/xdebug.ini
 
 ###########################################################################
 # pcov:
@@ -423,26 +425,30 @@ RUN php -m
 
 ARG INSTALL_MONGO=false
 
-RUN if [ ${INSTALL_MONGO} = true ]; then \
-    # Install the mongodb extension
-    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
-      pecl install mongo; \
-      docker-php-ext-enable mongo; \
-      php -m | grep -oiE '^mongo$'; \
-    else \
-      if [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") != "4" ]; then \
-        if [ $(php -r "echo PHP_MINOR_VERSION;") = "0" ] || [ $(php -r "echo PHP_MINOR_VERSION;") = "1" ]; then \
-          pecl install mongodb-1.9.2; \
+RUN if [ "${INSTALL_MONGO}" = "true" ]; then \
+    PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION;") && \
+    PHP_MINOR=$(php -r "echo PHP_MINOR_VERSION;") && \
+    if [ "${PHP_VERSION}" = "5" ]; then \
+        pecl install mongo || exit 1; \
+        docker-php-ext-enable mongo || exit 1; \
+        php -m | grep -q '^mongo$' || echo "Error: mongo extension not loaded"; \
+    elif [ "${PHP_VERSION}" = "7" ]; then \
+        if [ "${PHP_MINOR}" = "0" ] || [ "${PHP_MINOR}" = "1" ]; then \
+            pecl install mongodb-1.9.2 || exit 1; \
         else \
-          pecl install mongodb-1.16.2; \
+            pecl install mongodb-1.16.2 || exit 1; \
         fi; \
-      else \
-        pecl install mongodb; \
-      fi; \
-      docker-php-ext-enable mongodb; \
-      php -m | grep -oiE '^mongodb$'; \
+        docker-php-ext-enable mongodb || exit 1; \
+        php -m | grep -q '^mongodb$' || echo "Error: mongodb extension not loaded"; \
+    else \
+        pecl install mongodb || exit 1; \
+        docker-php-ext-enable mongodb || exit 1; \
+        php -m | grep -q '^mongodb$' || echo "Error: mongodb extension not loaded"; \
     fi; \
+else \
+    echo "MongoDB installation is skipped as INSTALL_MONGO is not set to true."; \
 fi
+
 
 ###########################################################################
 # Xhprof:
